@@ -1270,23 +1270,25 @@ describe('MatTooltip', () => {
       platform.ANDROID = true;
     });
 
-    it('should have a delay when showing on touchstart', async () => {
+    // Note: switching this test away from `fakeAsync` causes it to fail only on CI.
+    it('should have a delay when showing on touchstart', fakeAsync(() => {
       const fixture = TestBed.createComponent(BasicTooltipDemo);
       fixture.detectChanges();
       const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
 
       dispatchFakeEvent(button, 'touchstart');
       fixture.detectChanges();
-      await wait(250); // Halfway through the dela.
+      tick(250); // Halfway through the delay.
 
       assertTooltipInstance(fixture.componentInstance.tooltip, false);
 
-      await wait(500); // Finish the dela.
+      tick(500); // Finish the delay.
       fixture.detectChanges();
       finishCurrentTooltipAnimation(overlayContainerElement, true); // Finish the animation.
 
       assertTooltipInstance(fixture.componentInstance.tooltip, true);
-    });
+      flush();
+    }));
 
     it('should be able to disable opening on touch', async () => {
       const fixture = TestBed.createComponent(BasicTooltipDemo);

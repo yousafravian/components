@@ -5,6 +5,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Direction} from '@angular/cdk/bidi';
 import {provideFakeDirectionality, runAccessibilityChecks} from '@angular/cdk/testing/private';
+import {waitForMicrotasks} from '../private/testing/test-helpers';
 
 interface ModifierKeys {
   ctrlKey?: boolean;
@@ -420,6 +421,36 @@ describe('Listbox', () => {
             expect(listboxInstance.value()).toEqual([0, 2]);
           });
         });
+      });
+    });
+
+    describe('with shuffled items', () => {
+      it('should update collection order when items are shuffled', async () => {
+        setupListbox({
+          options: [
+            {value: 1, label: 'Item 1', disabled: false},
+            {value: 2, label: 'Item 2', disabled: false},
+            {value: 3, label: 'Item 3', disabled: false},
+          ],
+        });
+
+        // Verify initial DOM order
+        expect(optionElements.length).toBe(3);
+        expect(optionElements[0].textContent?.trim()).toBe('Item 1');
+        expect(optionElements[2].textContent?.trim()).toBe('Item 3');
+
+        const testComponent = fixture.componentInstance as ListboxExample;
+        const items = testComponent.options().reverse();
+        testComponent.options.set([...items]);
+        fixture.detectChanges();
+        await waitForMicrotasks();
+
+        // Re-query elements to check new DOM order
+        defineTestVariables(fixture);
+
+        expect(optionElements.length).toBe(3);
+        expect(optionElements[0].textContent?.trim()).toBe('Item 3');
+        expect(optionElements[2].textContent?.trim()).toBe('Item 1');
       });
     });
 

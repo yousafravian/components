@@ -7,6 +7,7 @@
 import * as _angular_core from '@angular/core';
 import { ElementRef } from '@angular/core';
 import { OnDestroy } from '@angular/core';
+import { Signal } from '@angular/core';
 import { untracked } from '@angular/core/primitives/signals';
 
 // @public
@@ -671,6 +672,7 @@ export interface SimpleComboboxInputs extends ExpansionItem {
     element: SignalLike<HTMLElement>;
     inlineSuggestion: SignalLike<string | undefined>;
     popup: SignalLike<SimpleComboboxPopupPattern | undefined>;
+    softDisabled?: SignalLike<boolean>;
     value: WritableSignalLike<string>;
 }
 
@@ -701,6 +703,7 @@ export class SimpleComboboxPattern {
     onKeydown(event: KeyboardEvent): void;
     readonly popupId: _angular_core.Signal<string | undefined>;
     readonly popupType: _angular_core.Signal<"listbox" | "tree" | "grid" | "dialog" | undefined>;
+    readonly softDisabled: () => boolean;
     readonly value: WritableSignalLike<string>;
 }
 
@@ -728,6 +731,23 @@ export class SimpleComboboxPopupPattern {
 
 // @public
 export function sortDirectives(a: HasElement, b: HasElement): 1 | -1;
+
+// @public
+export class SortedCollection<T extends HasElement> {
+    // (undocumented)
+    readonly orderedItems: Signal<T[]>;
+    // (undocumented)
+    register(item: T): void;
+    // (undocumented)
+    startObserving(element: HTMLElement): void;
+    // (undocumented)
+    stopObserving(): void;
+    // (undocumented)
+    unregister(item: T): void;
+}
+
+// @public
+export function tabIndexTransform(v: string | number | undefined): number | undefined;
 
 // @public
 export interface TabInputs extends Omit<ListNavigationItem, 'index'>, Omit<ExpansionItem, 'expandable' | 'expanded'> {

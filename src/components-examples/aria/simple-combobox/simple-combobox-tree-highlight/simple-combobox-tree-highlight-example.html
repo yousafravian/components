@@ -2,17 +2,26 @@
   <div #origin class="example-combobox-input-container">
     <span class="material-symbols-outlined example-icon example-search-icon">search</span>
     <input ngCombobox #combobox="ngCombobox" class="example-combobox-input" placeholder="Search..."
-      [(value)]="searchString" [(expanded)]="popupExpanded"
-      [inlineSuggestion]="selectedValues()[0] || firstMatchingOption()" />
+      [(value)]="searchString" [(expanded)]="popupExpanded" (click)="popupExpanded.set(true)"
+      (keydown.arrowdown)="navigated.set(true)" (keydown.arrowup)="navigated.set(true)"
+      [inlineSuggestion]="(searchString() || navigated()) ? selectedValues()[0] : undefined" />
+  </div>
+
+  <div aria-live="polite" class="cdk-visually-hidden">
+    {{filteredGroups().length === 0 ? 'No results found for ' + searchString() : ''}}
   </div>
 
   <ng-template [cdkConnectedOverlay]="{origin, usePopover: 'inline', matchWidth: true}" [cdkConnectedOverlayOpen]="true"
     [cdkConnectedOverlayDisableClose]="true">
     <ng-template ngComboboxPopup [combobox]="combobox" popupType="tree">
-      <div class="example-popover">
-        <ul ngTree ngComboboxWidget class="example-tree" focusMode="activedescendant" [tabIndex]="-1"
-          selectionMode="explicit" [(value)]="selectedValues" (click)="onCommit()" (keydown.enter)="onCommit()"
-          #tree="ngTree" [activeDescendant]="tree.activeDescendant()">
+      <div class="example-popup">
+        @if (filteredGroups().length === 0) {
+        <div class="example-no-results">No results found</div>
+        }
+        <ul ngTree ngComboboxWidget class="example-tree" focusMode="activedescendant" [tabindex]="-1"
+          selectionMode="follow" [(value)]="selectedValues" (click)="onCommit()" (keydown.enter)="onCommit()"
+          #tree="ngTree" [activeDescendant]="tree.activeDescendant()"
+          [class.example-empty]="filteredGroups().length === 0">
           <ng-template [ngTemplateOutlet]="treeNodes"
             [ngTemplateOutletContext]="{nodes: filteredGroups(), parent: tree}" />
         </ul>

@@ -535,6 +535,74 @@ describe('Combobox', () => {
         expect(inputElement.getAttribute('aria-expanded')).toBe('true');
       });
     });
+
+    describe('Disabled', () => {
+      beforeEach(() => setupCombobox());
+
+      it('should keep the input focusable by default when disabled', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.detectChanges();
+
+        expect(inputElement.disabled).toBe(false);
+        expect(inputElement.getAttribute('disabled')).toBeNull();
+        expect(inputElement.getAttribute('aria-disabled')).toBe('true');
+      });
+
+      it('should make the input read-only when disabled and softDisabled is true', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.detectChanges();
+
+        expect(inputElement.getAttribute('readonly')).toBe('');
+      });
+
+      it('should block interactions when disabled', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.detectChanges();
+
+        focus();
+        keydown('ArrowDown');
+        expect(inputElement.getAttribute('aria-expanded')).toBe('false');
+      });
+
+      it('should make the input unfocusable when softDisabled is false', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.componentInstance.softDisabled.set(false);
+        fixture.detectChanges();
+
+        expect(inputElement.disabled).toBe(true);
+        expect(inputElement.getAttribute('disabled')).toBe('');
+        expect(inputElement.getAttribute('aria-disabled')).toBe('true');
+      });
+
+      it('should respect user-defined tabindex when softDisabled is true', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.componentInstance.tabIndex.set(0);
+        fixture.detectChanges();
+
+        expect(inputElement.getAttribute('tabindex')).toBe('0');
+      });
+
+      it('should respect user-defined tabindex when not disabled', () => {
+        fixture.componentInstance.tabIndex.set(0);
+        fixture.detectChanges();
+
+        expect(inputElement.getAttribute('tabindex')).toBe('0');
+      });
+
+      it('should default to tabindex 0 when not disabled', () => {
+        fixture.detectChanges();
+        expect(inputElement.getAttribute('tabindex')).toBe('0');
+      });
+
+      it('should force tabindex to -1 when hard-disabled, ignoring user-defined tabindex', () => {
+        fixture.componentInstance.disabled.set(true);
+        fixture.componentInstance.softDisabled.set(false);
+        fixture.componentInstance.tabIndex.set(0);
+        fixture.detectChanges();
+
+        expect(inputElement.getAttribute('tabindex')).toBe('-1');
+      });
+    });
   });
 
   describe('with Tree', () => {
@@ -1145,8 +1213,12 @@ describe('Combobox', () => {
     [(value)]="searchString"
     [(expanded)]="popupExpanded"
     [readonly]="readonly()"
+    [disabled]="disabled()"
+    [softDisabled]="softDisabled()"
     [alwaysExpanded]="alwaysExpanded()"
+    [tabindex]="tabIndex()"
     (focusout)="onBlur()"
+    (click)="popupExpanded.set(true)"
   />
 
   <ng-template ngComboboxPopup [combobox]="combobox">
@@ -1168,7 +1240,10 @@ describe('Combobox', () => {
 })
 class ComboboxListboxExample {
   readonly = signal(false);
+  disabled = signal(false);
+  softDisabled = signal(true);
   alwaysExpanded = signal(false);
+  tabIndex = signal<number | undefined>(undefined);
   popupExpanded = signal(false);
   searchString = signal('');
   value = signal<string[]>([]);
@@ -1489,6 +1564,7 @@ class ComboboxGridExample {
     (input)="onInput()"
     [disabled]="readonly()"
     (focusout)="onBlur()"
+    (click)="combobox.expanded.set(true)"
   />
 
   <ng-template ngComboboxPopup [combobox]="combobox">
@@ -1552,6 +1628,7 @@ class ComboboxListboxAutoSelectExample {
     [(expanded)]="popupExpanded"
     [inlineSuggestion]="value()[0] || options()[0]"
     [disabled]="readonly()"
+    (click)="popupExpanded.set(true)"
   />
 
   <ng-template ngComboboxPopup [combobox]="combobox">
